@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 export default function Home() {
   const [todos, setTodos] = useState([]);
@@ -18,16 +18,13 @@ export default function Home() {
     localStorage.setItem("todos", JSON.stringify(todos));
   }, [todos]);
 
+  // add
   const addTodo = () => {
     if (!input.trim()) return;
 
     setTodos((prev) => [
       ...prev,
-      {
-        id: Date.now(),
-        text: input,
-        completed: false,
-      },
+      { id: crypto.randomUUID(), text: input, completed: false },
     ]);
 
     setInput("");
@@ -37,32 +34,27 @@ export default function Home() {
     setTodos((prev) => prev.filter((t) => t.id !== id));
   };
 
+  const filteredTodos = todos.filter((todo) => {
+    if (filter === "active") return !todo.completed;
+    if (filter === "complted") return todo.completed;
+    return true;
+  });
+
   const toggleTodo = (id) => {
     setTodos((prev) =>
       prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)),
     );
   };
 
-  const filteredTodos = todos.filter((todo) => {
-    if (filter === "active") return !todo.completed;
-    if (filter === "completed") return todo.completed;
-    return true;
-  });
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") addTodo();
-  };
-
   return (
     <div>
       <main>
-        <h1 className="font-semibold">Todo List</h1>
+        <h1>Todo List</h1>
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="add task here"
+          placeholder="add task here..."
           className="input"
         />
         <button type="button" onClick={addTodo} className="btn btn-primary">
@@ -80,6 +72,7 @@ export default function Home() {
             </button>
           ))}
         </div>
+
         <ul>
           {filteredTodos.length === 0 ? (
             <p className="text-warning">No todos found</p>
@@ -87,15 +80,20 @@ export default function Home() {
             filteredTodos.map((todo) => (
               <li key={todo.id}>
                 <span
-                  onClick={() => toggleTodo(todo.id)}
-                  className={`font-semibold ${todo.completed ? "line-through text-gray-400" : ""}`}
+                  className={`${todo.completed ? "line-through text-gray-400" : ""}`}
                 >
-                  {todo.text}
+                  {todo.text}{" "}
+                  <input
+                    type="checkbox"
+                    className="checkbox"
+                    onChange={() => toggleTodo(todo.id)}
+                    checked={todo.completed}
+                  />
                 </span>
                 <button
                   type="button"
                   onClick={() => deleteTodo(todo.id)}
-                  className="btn btn-error btn-outline"
+                  className="btn btn-error btn-sm btn-outline"
                 >
                   remove
                 </button>
